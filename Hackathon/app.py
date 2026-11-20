@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-from extractor import extract_tasks_from_transcript
 from extractor import extract_tasks_from_transcript, extract_tasks_from_audio
 
 # Page configuration

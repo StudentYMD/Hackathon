@@ -1,5 +1,0 @@
-.env
-.venv/
-__pycahche__/
-node_modules/
-dist/
