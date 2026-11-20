@@ -99,18 +99,6 @@ if st.button("🧠 Extract Commitments", type="primary"):
             except Exception as e:
                 st.error(f"Extraction Error: {e}")
 
-if st.button("🧠 Extract Commitments", type="primary"):
-    if not gemini_key:
-        st.error("Please enter your Gemini API Key in the left sidebar first!")
-    else:
-        with st.spinner("Agent is analyzing context, owners, and ambiguities..."):
-            data = extract_tasks_from_transcript(transcript, gemini_key)
-            st.session_state.summary = data.get("meeting_summary", "")
-            st.session_state.tasks = data.get("action_items", [])
-            # Track sync status per task
-            for t in st.session_state.tasks:
-                t["synced"] = False
-
 # --- DISPLAY RESULTS & HUMAN-IN-THE-LOOP ---
 if st.session_state.summary:
     st.info(f"**Meeting Context Summary:** {st.session_state.summary}")
