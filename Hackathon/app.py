@@ -99,8 +99,6 @@ if st.button("🧠 Extract Commitments", type="primary"):
             except Exception as e:
                 st.error(f"Extraction Error: {e}")
 
-transcript = st.text_area("1️⃣ Paste Meeting Transcript", value=default_transcript, height=180)
-
 if st.button("🧠 Extract Commitments", type="primary"):
     if not gemini_key:
         st.error("Please enter your Gemini API Key in the left sidebar first!")
