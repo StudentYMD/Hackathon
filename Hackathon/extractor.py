@@ -86,6 +86,47 @@ def extract_tasks_from_transcript(transcript: str, api_key: str) -> dict:
     # Parse and return as a standard Python dictionary
     return json.loads(response.text)
 
+def extract_tasks_from_audio(audio_bytes: bytes, mime_type: str, api_key: str) -> dict:
+    client = genai.Client(api_key=api_key.strip())
+
+    system_instruction = """
+    You are an intelligent Meeting-to-Action AI Agent. Listen to the provided meeting audio recording, transcribe its context internally, and extract ONLY genuine, actionable commitments and decisions.
+    
+    Rules:
+    1. IGNORE casual conversation, jokes, brainstorming ideas that were not agreed upon, and status updates on already-finished work.
+    2. IDENTIFY Task Ownership: Assign the exact person who agreed to do the task. If someone says "we need to fix X" without assigning a name, set owner to null.
+    3. FLAG AMBIGUITY (Human-in-the-Loop): If a task has no clear owner OR no clear deadline, you MUST set 'is_ambiguous' to True and provide a helpful 'clarification_question'.
+    4. EXPLAIN REASONING: Always explain your logic in the 'reasoning' field.
+    """
+
+    candidate_models = [
+        "gemini-4-hydrogen",
+        "gemini-3.5-flash-lite",
+        "gemini-3.5-flash",
+    ]
+
+    audio_part = types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
+
+    last_error = None
+    for model_name in candidate_models:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=[audio_part, "Listen to this meeting audio and extract all actionable tasks and commitments."],
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    response_mime_type="application/json",
+                    response_schema=MeetingExtraction,
+                    temperature=0.1,
+                ),
+            )
+            return json.loads(response.text)
+        except Exception as e:
+            last_error = e
+            continue
+
+    raise RuntimeError(f"Audio extraction failed across models. Last error: {last_error}")
+
 # 3. Quick test block (Run `python extractor.py` to test!)
 if __name__ == "__main__":
     # Paste your Gemini API key here just to test
